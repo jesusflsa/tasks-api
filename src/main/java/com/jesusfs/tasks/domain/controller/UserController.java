@@ -9,7 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,11 +22,10 @@ public class UserController {
 
     @GetMapping
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<ResponseUserDTO> getProfile(Authentication authentication) {
+    public ResponseEntity<ResponseUserDTO> getProfile() {
         log.info("UserController::getProfile execution started.");
-        UserModel principal = (UserModel) authentication.getPrincipal();
 
-        UserModel user = userService.getUserById(principal.getId());
+        UserModel user = userService.getUser();
         ResponseUserDTO responseDTO = new ResponseUserDTO(user.getUsername(), user.getEmail());
         log.info("UserController::getProfile execution ended.");
         return ResponseEntity.ok(responseDTO);
@@ -35,12 +33,10 @@ public class UserController {
 
     @PutMapping
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<?> updateProfile(Authentication authentication, @RequestBody @Valid UpdateUserDTO userDTO) {
+    public ResponseEntity<?> updateProfile(@RequestBody @Valid UpdateUserDTO userDTO) {
         log.info("UserController::updateProfile execution started.");
-        UserModel principal = (UserModel) authentication.getPrincipal();
-
         log.debug("UserController::updateProfile params received: {}", userDTO);
-        UserModel user = userService.updateUser(userDTO, principal.getId());
+        UserModel user = userService.updateUser(userDTO);
         ResponseUserDTO responseDTO = new ResponseUserDTO(user.getUsername(), user.getEmail());
         log.info("UserController::updateProfile execution ended.");
         return ResponseEntity.ok(responseDTO);

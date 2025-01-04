@@ -5,18 +5,20 @@ import com.jesusfs.tasks.domain.model.user.dto.LoginUserDTO;
 import com.jesusfs.tasks.domain.model.user.dto.RequestUserDTO;
 import com.jesusfs.tasks.domain.model.user.dto.UpdateUserDTO;
 import com.jesusfs.tasks.domain.repository.UserRepository;
+import com.jesusfs.tasks.exceptions.UserNotFoundException;
 import com.jesusfs.tasks.exceptions.UserNotValidException;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.FieldError;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @Service
@@ -27,12 +29,17 @@ public class UserServiceImpl implements UserService {
     private final BCryptPasswordEncoder bCrypt = new BCryptPasswordEncoder();
 
     @Override
-    public UserModel getUserById(Long id) {
-        log.info("UserServiceImpl::getUserById execution started.");
-        Optional<UserModel> opUser = userRepository.findById(id);
-        log.info("UserServiceImpl::getUserById execution ended.");
-        return opUser
-                .orElseThrow(() -> new EntityNotFoundException("User with id \"" + id + "\" not found."));
+    public UserModel getUser() {
+        log.info("UserServiceImpl::getUser execution started.");
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        UserDetails principal = (UserDetails) auth.getPrincipal();
+        log.info("UserServiceImpl::getUser execution ended.");
+        UserModel user = userRepository.findByUsername(principal.getUsername()).orElseThrow(() -> {
+            log.error("Invalid user: {}", principal);
+            return new UserNotFoundException("Invalid user. Login first");
+        });
+        log.debug("UserServiceImpl::getUser user got: {}", user);
+        return user;
     }
 
     @Override
@@ -46,19 +53,19 @@ public class UserServiceImpl implements UserService {
         UserModel user = new UserModel();
         user.setUsername(userDTO.username());
         user.setPassword(bcrypt.encode(userDTO.password()));
-        user.setEmail(user.getEmail());
+        user.setEmail(userDTO.email());
 
         log.info("UserServiceImpl::saveUser execution ended.");
         return userRepository.save(user);
     }
 
     @Override
-    public UserModel updateUser(@Valid UpdateUserDTO userDTO, Long id) {
+    public UserModel updateUser(@Valid UpdateUserDTO userDTO) {
         log.info("UserServiceImpl::updateUser execution ended.");
-        validateUser(userDTO, id);
+        UserModel user = this.getUser();
+        validateUser(userDTO, user.getId());
 
-        log.debug("UserServiceImpl::updateUser params received for id {}: {}", id, userDTO);
-        UserModel user = getUserById(id);
+        log.debug("UserServiceImpl::updateUser params received for id {}: {}", user.getId(), userDTO);
         user.setUsername(userDTO.username());
         user.setEmail(userDTO.email());
 

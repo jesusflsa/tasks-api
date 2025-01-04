@@ -6,14 +6,17 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.jesusfs.tasks.domain.model.user.UserModel;
 import com.jesusfs.tasks.domain.repository.UserRepository;
+import com.jesusfs.tasks.exceptions.UserNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.Collections;
 
 @Slf4j
 @Service
@@ -51,8 +54,8 @@ public class JwtServiceImpl implements JwtService {
                     .verify(token);
             log.info("JwtServiceImpl::validateToken execution ended.");
             return true;
-        } catch (JWTVerificationException exception) {
-            log.error("JwtServiceImpl::validateToken {}", exception.getMessage());
+        } catch (JWTVerificationException ex) {
+            log.error("JwtServiceImpl::validateToken {}", ex.getMessage());
             return false;
         }
     }
@@ -69,7 +72,7 @@ public class JwtServiceImpl implements JwtService {
     }
 
     @Override
-    public UserModel getUserDetailsFromToken(String token) {
+    public UserDetails getUserDetailsFromToken(String token) {
         log.info("JwtServiceImpl::getUserDetailsFromToken execution started.");
         Algorithm algorithm = Algorithm.HMAC256(PRIVATE_KEY);
         DecodedJWT decodedJWT = JWT.require(algorithm)
@@ -79,6 +82,7 @@ public class JwtServiceImpl implements JwtService {
 
         String username = decodedJWT.getSubject();
         log.info("JwtServiceImpl::getUserDetailsFromToken execution ended.");
-        return userRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("User not found."));
+        UserModel user = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found."));
+        return new User(user.getUsername(), user.getPassword(), Collections.emptyList());
     }
 }

@@ -7,9 +7,9 @@ import com.jesusfs.tasks.domain.model.user.dto.UpdateUserDTO;
 import jakarta.validation.Valid;
 
 public interface UserService {
-    UserModel getUserById(Long id);
+    UserModel getUser();
     UserModel saveUser(@Valid RequestUserDTO userDTO);
-    UserModel updateUser(@Valid UpdateUserDTO userDTO, Long id);
+    UserModel updateUser(@Valid UpdateUserDTO userDTO);
 
     UserModel loginUser(@Valid LoginUserDTO userDTO);
 
