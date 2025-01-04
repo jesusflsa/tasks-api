@@ -2,6 +2,7 @@ package com.jesusfs.tasks.exceptions;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 
 import java.util.List;
@@ -9,8 +10,8 @@ import java.util.List;
 @Getter
 @Setter
 public class UserNotValidException extends RuntimeException {
-    private List<ObjectError> errors;
-    public UserNotValidException(List<ObjectError> errors) {
+    private List<FieldError> errors;
+    public UserNotValidException(List<FieldError> errors) {
         super();
         this.errors = errors;
     }

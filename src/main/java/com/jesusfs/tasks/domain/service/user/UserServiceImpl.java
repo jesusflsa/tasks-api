@@ -12,7 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.validation.ObjectError;
+import org.springframework.validation.FieldError;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -77,7 +77,7 @@ public class UserServiceImpl implements UserService {
         boolean valid = bCrypt.matches(userDTO.password(), user.getPassword());
         if (!valid) {
             log.error("UserServiceImpl::loginUser password for {} is incorrect.", userDTO.username());
-            throw new UserNotValidException(List.of(new ObjectError("password", "Password is incorrect")));
+            throw new UserNotValidException(List.of(new FieldError("", "password", "Password is incorrect")));
         }
 
         log.info("UserServiceImpl::loginUser execution ended.");
@@ -87,15 +87,15 @@ public class UserServiceImpl implements UserService {
     @Override
     public void validateUser(RequestUserDTO userDTO) {
         log.info("UserServiceImpl::validateUser (RequestUserDTO) execution started.");
-        List<ObjectError> exceptions = new ArrayList<>();
+        List<FieldError> exceptions = new ArrayList<>();
         if (userRepository.existsByUsernameIgnoreCase(userDTO.username())) {
             log.error("UserServiceImpl::validateUser (RequestUserDTO) username {} is taken.", userDTO.username());
-            exceptions.add(new ObjectError("username", "This username is already in use."));
+            exceptions.add(new FieldError("", "username", "This username is already in use."));
         }
 
         if (userRepository.existsByEmailIgnoreCase(userDTO.email())) {
             log.error("UserServiceImpl::validateUser (RequestUserDTO) email {} is taken.", userDTO.email());
-            exceptions.add(new ObjectError("email", "This email is already in use."));
+            exceptions.add(new FieldError("", "email", "This email is already in use."));
         }
         if (exceptions.isEmpty()) return;
 
@@ -106,15 +106,15 @@ public class UserServiceImpl implements UserService {
     @Override
     public void validateUser(UpdateUserDTO userDTO, Long id) {
         log.info("UserServiceImpl::validateUser (UpdateUserDTO, Long) execution started.");
-        List<ObjectError> exceptions = new ArrayList<>();
+        List<FieldError> exceptions = new ArrayList<>();
         if (userRepository.existsByUsernameIgnoreCaseAndIdNot(userDTO.username(), id)) {
             log.error("UserServiceImpl::validateUser (UpdateUserDTO, Long) username {} for id {} is taken.", userDTO.username(), id);
-            exceptions.add(new ObjectError("username", "This username is already in use."));
+            exceptions.add(new FieldError("", "username", "This username is already in use."));
         }
 
         if (userRepository.existsByEmailIgnoreCaseAndIdNot(userDTO.email(), id)) {
             log.error("UserServiceImpl::validateUser (UpdateUserDTO, Long) email {} for id {} is taken.", userDTO.email(), id);
-            exceptions.add(new ObjectError("email", "This email is already in use."));
+            exceptions.add(new FieldError("","email", "This email is already in use."));
         }
         if (exceptions.isEmpty()) return;
 
@@ -125,10 +125,10 @@ public class UserServiceImpl implements UserService {
     @Override
     public void validateUser(LoginUserDTO userDTO) {
         log.info("UserServiceImpl::validateUser (LoginUserDTO) execution started.");
-        List<ObjectError> exceptions = new ArrayList<>();
+        List<FieldError> exceptions = new ArrayList<>();
         if (!userRepository.existsByUsernameIgnoreCase(userDTO.username())) {
             log.error("UserServiceImpl::validateUser (LoginUserDTO) username {} not exists.", userDTO.username());
-            exceptions.add(new ObjectError("username", "This username not exists."));
+            exceptions.add(new FieldError("","username", "This username not exists."));
         }
 
         if (exceptions.isEmpty()) return;
