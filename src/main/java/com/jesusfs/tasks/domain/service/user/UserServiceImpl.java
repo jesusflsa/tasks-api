@@ -1,6 +1,7 @@
 package com.jesusfs.tasks.domain.service.user;
 
 import com.jesusfs.tasks.domain.model.user.UserModel;
+import com.jesusfs.tasks.domain.model.user.dto.LoginUserDTO;
 import com.jesusfs.tasks.domain.model.user.dto.RequestUserDTO;
 import com.jesusfs.tasks.domain.model.user.dto.UpdateUserDTO;
 import com.jesusfs.tasks.domain.repository.UserRepository;
@@ -22,6 +23,8 @@ import java.util.Optional;
 public class UserServiceImpl implements UserService {
     @Autowired
     private UserRepository userRepository;
+
+    private final BCryptPasswordEncoder bCrypt = new BCryptPasswordEncoder();
 
     @Override
     public UserModel getUserById(Long id) {
@@ -64,6 +67,24 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public UserModel loginUser(LoginUserDTO userDTO) {
+        log.info("UserServiceImpl::loginUser execution started.");
+        validateUser(userDTO);
+
+        log.debug("UserServiceImpl::loginUser params received: {}",userDTO);
+        UserModel user = userRepository.findByUsername(userDTO.username()).get();
+
+        boolean valid = bCrypt.matches(userDTO.password(), user.getPassword());
+        if (!valid) {
+            log.error("UserServiceImpl::loginUser password for {} is incorrect.", userDTO.username());
+            throw new UserNotValidException(List.of(new ObjectError("password", "Password is incorrect")));
+        }
+
+        log.info("UserServiceImpl::loginUser execution ended.");
+        return user;
+    }
+
+    @Override
     public void validateUser(RequestUserDTO userDTO) {
         log.info("UserServiceImpl::validateUser (RequestUserDTO) execution started.");
         List<ObjectError> exceptions = new ArrayList<>();
@@ -87,17 +108,32 @@ public class UserServiceImpl implements UserService {
         log.info("UserServiceImpl::validateUser (UpdateUserDTO, Long) execution started.");
         List<ObjectError> exceptions = new ArrayList<>();
         if (userRepository.existsByUsernameIgnoreCaseAndIdNot(userDTO.username(), id)) {
-            log.error("UserServiceImpl::validateUser (UpdateUserDTO, Long) username {} for id {} is taken.", id, userDTO.username());
+            log.error("UserServiceImpl::validateUser (UpdateUserDTO, Long) username {} for id {} is taken.", userDTO.username(), id);
             exceptions.add(new ObjectError("username", "This username is already in use."));
         }
 
         if (userRepository.existsByEmailIgnoreCaseAndIdNot(userDTO.email(), id)) {
-            log.error("UserServiceImpl::validateUser (UpdateUserDTO, Long) email {} for id {} is taken.", id, userDTO.email());
+            log.error("UserServiceImpl::validateUser (UpdateUserDTO, Long) email {} for id {} is taken.", userDTO.email(), id);
             exceptions.add(new ObjectError("email", "This email is already in use."));
         }
         if (exceptions.isEmpty()) return;
 
         log.info("UserServiceImpl::validateUser (UpdateUserDTO, Long) execution ended.");
+        throw new UserNotValidException(exceptions);
+    }
+
+    @Override
+    public void validateUser(LoginUserDTO userDTO) {
+        log.info("UserServiceImpl::validateUser (LoginUserDTO) execution started.");
+        List<ObjectError> exceptions = new ArrayList<>();
+        if (!userRepository.existsByUsernameIgnoreCase(userDTO.username())) {
+            log.error("UserServiceImpl::validateUser (LoginUserDTO) username {} not exists.", userDTO.username());
+            exceptions.add(new ObjectError("username", "This username not exists."));
+        }
+
+        if (exceptions.isEmpty()) return;
+
+        log.info("UserServiceImpl::validateUser (LoginUserDTO) execution ended.");
         throw new UserNotValidException(exceptions);
     }
 }
