@@ -7,6 +7,7 @@ import jakarta.validation.constraints.Pattern;
 
 public record RequestUserDTO(
         @Min(value = 4, message = "El nombre de usuario debe tener mínimo 4 caracteres.")
+        @Pattern(regexp = "^[a-zA-Z0-9]+$", message = "Ingresa un nombre de usuario válido.")
         @NotBlank
         String username,
 
