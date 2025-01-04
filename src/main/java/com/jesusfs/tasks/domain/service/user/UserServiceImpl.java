@@ -60,7 +60,7 @@ public class UserServiceImpl implements UserService {
         log.debug("UserServiceImpl::updateUser params received for id {}: {}", id, userDTO);
         UserModel user = getUserById(id);
         user.setUsername(userDTO.username());
-        user.setEmail(user.getEmail());
+        user.setEmail(userDTO.email());
 
         log.info("UserServiceImpl::updateUser execution ended.");
         return userRepository.save(user);

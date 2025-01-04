@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -15,11 +16,13 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 @Controller
 @RequestMapping("/profile")
+@PreAuthorize("isAuthenticated()")
 public class UserController {
     @Autowired
     private UserService userService;
 
     @GetMapping
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ResponseUserDTO> getProfile(Authentication authentication) {
         log.info("UserController::getProfile execution started.");
         UserModel principal = (UserModel) authentication.getPrincipal();
@@ -31,6 +34,7 @@ public class UserController {
     }
 
     @PutMapping
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> updateProfile(Authentication authentication, @RequestBody @Valid UpdateUserDTO userDTO) {
         log.info("UserController::updateProfile execution started.");
         UserModel principal = (UserModel) authentication.getPrincipal();
