@@ -18,7 +18,8 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler(UserNotValidException.class)
-    public ResponseEntity<List<ErrorEntity>> handleUserNotValid(List<FieldError> exceptions) {
+    public ResponseEntity<List<ErrorEntity>> handleUserNotValid(UserNotValidException ex) {
+        List<FieldError> exceptions = ex.getErrors();
         return ResponseEntity.badRequest().body(exceptions.stream().map(ErrorEntity::new).toList());
     }
 
