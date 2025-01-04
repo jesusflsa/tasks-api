@@ -10,7 +10,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -63,7 +62,7 @@ public class JwtServiceImpl implements JwtService {
     }
 
     @Override
-    public UserDetails getUserDetailsFromToken(String token) {
+    public UserModel getUserDetailsFromToken(String token) {
         Algorithm algorithm = Algorithm.HMAC256(PRIVATE_KEY);
         DecodedJWT decodedJWT = JWT.require(algorithm)
                 .withIssuer("tasks-api")
@@ -71,7 +70,6 @@ public class JwtServiceImpl implements JwtService {
                 .verify(token);
 
         String username = decodedJWT.getSubject();
-        UserModel user = userRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("User not found."));
-        return new User(user.getUsername(), user.getPassword(), Collections.emptyList());
+        return userRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("User not found."));
     }
 }

@@ -1,5 +1,6 @@
 package com.jesusfs.tasks.security.filter;
 
+import com.jesusfs.tasks.domain.model.user.UserModel;
 import com.jesusfs.tasks.security.service.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Collections;
 
 @Component
 public class JwtFilter extends OncePerRequestFilter {
@@ -24,8 +26,8 @@ public class JwtFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String token = jwtService.getToken(request);
         if (jwtService.validateToken(token)) {
-            UserDetails user = jwtService.getUserDetailsFromToken(token);
-            Authentication auth = new UsernamePasswordAuthenticationToken(user, null);
+            UserModel user = jwtService.getUserDetailsFromToken(token);
+            Authentication auth = new UsernamePasswordAuthenticationToken(user, null, Collections.emptyList());
             SecurityContextHolder.getContext().setAuthentication(auth);
         }
         filterChain.doFilter(request, response);
