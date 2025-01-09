@@ -4,6 +4,8 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.jesusfs.tasks.domain.model.auth.dto.RequestRefreshDTO;
+import com.jesusfs.tasks.domain.model.auth.dto.ResponseTokenDTO;
 import com.jesusfs.tasks.domain.model.user.UserModel;
 import com.jesusfs.tasks.domain.repository.UserRepository;
 import com.jesusfs.tasks.exceptions.UserNotFoundException;
@@ -24,15 +26,37 @@ public class JwtServiceImpl implements JwtService {
     @Value("jwt.private.key")
     private String PRIVATE_KEY;
 
+    private final Integer expiresTime = 3600;
+
     @Autowired
     private UserRepository userRepository;
 
     private Instant generateExpirationDate() {
-        return Instant.now().plusSeconds(3600);
+        return Instant.now().plusSeconds(expiresTime);
     }
 
     @Override
-    public String createToken(UserModel user) {
+    public ResponseTokenDTO createTokenDTO(RequestRefreshDTO tokenDTO) {
+        UserDetails userDetails = getUserDetailsFromToken(tokenDTO.refreshToken());
+
+        String token = createToken(userDetails);
+        String refreshToken = createRefresh(userDetails);
+
+        return new ResponseTokenDTO(token, refreshToken, expiresTime);
+    }
+
+    @Override
+    public ResponseTokenDTO createTokenDTO(UserModel user) {
+        UserDetails userDetails = new User(user.getUsername(), "", Collections.emptyList());
+
+        String token = createToken(userDetails);
+        String refreshToken = createRefresh(userDetails);
+
+        return new ResponseTokenDTO(token, refreshToken, expiresTime);
+    }
+
+    @Override
+    public String createToken(UserDetails user) {
         log.info("JwtServiceImpl::createToken execution started.");
         Algorithm algorithm = Algorithm.HMAC256(PRIVATE_KEY);
         log.info("JwtServiceImpl::createToken execution ended.");
@@ -40,6 +64,17 @@ public class JwtServiceImpl implements JwtService {
                 .withIssuer("tasks-api")
                 .withSubject(user.getUsername())
                 .withExpiresAt(generateExpirationDate())
+                .sign(algorithm);
+    }
+
+    @Override
+    public String createRefresh(UserDetails user) {
+        log.info("JwtServiceImpl::createRefresh execution started.");
+        Algorithm algorithm = Algorithm.HMAC256(PRIVATE_KEY);
+        log.info("JwtServiceImpl::createRefresh execution ended.");
+        return JWT.create()
+                .withIssuer("tasks-api")
+                .withSubject(user.getUsername())
                 .sign(algorithm);
     }
 

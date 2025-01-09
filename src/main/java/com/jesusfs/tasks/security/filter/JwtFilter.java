@@ -1,6 +1,5 @@
 package com.jesusfs.tasks.security.filter;
 
-import com.jesusfs.tasks.domain.model.user.UserModel;
 import com.jesusfs.tasks.security.service.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -28,7 +27,7 @@ public class JwtFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         log.info("JwtFilter::doFilterInternal execution started.");
         String token = jwtService.getToken(request);
-        if (jwtService.validateToken(token)) {
+        if (token != null && jwtService.validateToken(token)) {
             log.debug("JwtFilter::doFilterInternal token provided: {}.", token);
             UserDetails user = jwtService.getUserDetailsFromToken(token);
             Authentication auth = new UsernamePasswordAuthenticationToken(user, null, Collections.emptyList());
