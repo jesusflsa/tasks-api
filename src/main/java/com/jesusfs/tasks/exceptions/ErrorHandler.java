@@ -1,6 +1,5 @@
 package com.jesusfs.tasks.exceptions;
 
-import com.auth0.jwt.exceptions.JWTVerificationException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -38,11 +37,6 @@ public class ErrorHandler {
     @ExceptionHandler(TaskNotFoundException.class)
     public ResponseEntity<ErrorEntity> handleTaskNotFound(TaskNotFoundException ex) {
         return ResponseEntity.badRequest().body(new ErrorEntity("task", ex.getMessage()));
-    }
-
-    @ExceptionHandler(JWTVerificationException.class)
-    public ResponseEntity<ErrorEntity> handleJWTVerification(JWTVerificationException ex) {
-        return ResponseEntity.badRequest().body(new ErrorEntity("token", ex.getMessage()));
     }
 
     public record ErrorEntity(String field, String message) {

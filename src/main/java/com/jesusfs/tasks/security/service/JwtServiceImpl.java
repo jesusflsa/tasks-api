@@ -46,6 +46,7 @@ public class JwtServiceImpl implements JwtService {
     @Override
     public boolean validateToken(String token) {
         log.info("JwtServiceImpl::validateToken execution started.");
+        if (token == null) return false;
         try {
             Algorithm algorithm = Algorithm.HMAC256(PRIVATE_KEY);
             JWT.require(algorithm)
