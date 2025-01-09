@@ -4,6 +4,7 @@ import com.jesusfs.tasks.domain.model.task.TaskModel;
 import com.jesusfs.tasks.domain.model.task.dto.RequestTaskDTO;
 import com.jesusfs.tasks.domain.model.task.dto.ResponseTaskDTO;
 import com.jesusfs.tasks.domain.model.task.dto.UpdateTaskDTO;
+import com.jesusfs.tasks.domain.model.task.status.ResponseStatusDTO;
 import com.jesusfs.tasks.domain.service.task.TaskService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Slf4j
 @Controller
@@ -62,5 +65,14 @@ public class TaskController {
         TaskModel task = taskService.updateTask(id, taskDTO);
         log.info("TaskController::updateTask execution ended.");
         return ResponseEntity.ok(new ResponseTaskDTO(task));
+    }
+
+    @GetMapping("/status")
+    @PreAuthorize("permitAll()")
+    public ResponseEntity<List<ResponseStatusDTO>> getStatus() {
+        log.info("TaskController::getStatus execution started.");
+        List<ResponseStatusDTO> status = taskService.getStatus();
+        log.info("TaskController::getStatus execution ended.");
+        return ResponseEntity.ok(status);
     }
 }
