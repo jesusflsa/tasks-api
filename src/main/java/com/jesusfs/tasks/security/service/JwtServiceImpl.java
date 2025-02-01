@@ -79,7 +79,7 @@ public class JwtServiceImpl implements JwtService {
     }
 
     @Override
-    public boolean validateToken(String token) {
+    public boolean validateToken(String token) throws JWTVerificationException {
         log.info("JwtServiceImpl::validateToken execution started.");
         if (token == null) return false;
         try {
@@ -92,7 +92,7 @@ public class JwtServiceImpl implements JwtService {
             return true;
         } catch (JWTVerificationException ex) {
             log.error("JwtServiceImpl::validateToken {}", ex.getMessage());
-            return false;
+            throw ex;
         }
     }
 
@@ -117,8 +117,8 @@ public class JwtServiceImpl implements JwtService {
                 .verify(token);
 
         String username = decodedJWT.getSubject();
-        log.info("JwtServiceImpl::getUserDetailsFromToken execution ended.");
         UserModel user = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found."));
+        log.info("JwtServiceImpl::getUserDetailsFromToken execution ended.");
         return new User(user.getUsername(), user.getPassword(), Collections.emptyList());
     }
 }

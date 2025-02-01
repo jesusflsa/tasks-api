@@ -33,12 +33,12 @@ public class UserServiceImpl implements UserService {
         log.info("UserServiceImpl::getUser execution started.");
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         UserDetails principal = (UserDetails) auth.getPrincipal();
-        log.info("UserServiceImpl::getUser execution ended.");
         UserModel user = userRepository.findByUsername(principal.getUsername()).orElseThrow(() -> {
             log.error("Invalid user: {}", principal);
             return new UserNotFoundException("Invalid user. Login first");
         });
         log.debug("UserServiceImpl::getUser user got: {}", user);
+        log.info("UserServiceImpl::getUser execution ended.");
         return user;
     }
 
