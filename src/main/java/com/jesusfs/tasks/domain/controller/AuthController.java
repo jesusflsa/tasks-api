@@ -7,19 +7,22 @@ import com.jesusfs.tasks.domain.model.user.dto.LoginUserDTO;
 import com.jesusfs.tasks.domain.model.user.dto.RequestUserDTO;
 import com.jesusfs.tasks.domain.service.user.UserService;
 import com.jesusfs.tasks.security.service.JwtService;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-@Controller
+@RestController
 @RequestMapping("/auth")
 @PreAuthorize("permitAll()")
+@Tag(name = "Auth", description = "Authentication endpoints")
 public class AuthController {
     @Autowired
     private UserService userService;
